@@ -279,7 +279,7 @@
   function glasses(tr) {
     const frame = tr.glasses === 'kalın çerçeve' ? '#26281d' : '#4a4a4a';
     const lens = `fill="#ffffff" fill-opacity=".18"`;
-    const armL = tr.extras.tesettur ? 64 : 57, armR = tr.extras.tesettur ? 136 : 143;
+    const armL = tr.extras.tesettur ? 61 : 57, armR = tr.extras.tesettur ? 139 : 143;
     switch (tr.glasses) {
       case 'var':
         return `<g stroke="${frame}" stroke-width="2.2" fill="none">
@@ -333,16 +333,21 @@
     return s;
   }
 
+  // Türban: yalnızca saçı örter; yüz, boyun ve omuzlar açıkta kalır.
   function hijabBack(tr) {
-    const c = tr.outfit && luminance(tr.outfit) > 0.85 ? '#cfc9ac' : tint(tr.outfit, 0.08);
-    tr._hijab = c;
-    return `<path d="M100 32c46 0 60 38 58 80-2 26 4 44 18 64 6 10 8 20 8 30H16c0-10 2-20 8-30 14-20 20-38 18-64-2-42 12-80 58-80z" fill="${c}"/>
-            <path d="M158 112c-2 26 4 44 18 64 6 10 8 20 8 30h-22c0-26-6-50-10-70z" fill="${shade(c, 0.12)}" opacity=".6"/>`;
+    const base = tr.outfit && luminance(tr.outfit) > 0.85 ? '#cfc9ac' : tint(tr.outfit, 0.1);
+    tr._hijab = base;
+    const d = shade(base, 0.14);
+    return `<path d="M47 102C43 48 74 31 100 31s57 17 53 71c0 10-3 18-8 24q-6 6-12 6H67q-6 0-12-6c-5-6-8-14-8-24z" fill="${base}"/>
+            <path d="M136 120c14 6 22 22 22 40-8-6-14-16-26-26z" fill="${d}"/>
+            <path d="M132 128c6 10 8 22 6 34-6-8-10-18-12-30z" fill="${base}"/>`;
   }
   function hijabFront(tr) {
-    const c = tr._hijab;
-    return `<path fill-rule="evenodd" fill="${c}" d="M100 34c44 0 58 36 56 78-1 22 2 38 8 52H36c6-14 9-30 8-52-2-42 12-78 56-78z M100 59c-24 0-38 18-38 44 0 26 16 44 38 44s38-18 38-44c0-26-14-44-38-44z"/>
-            <path d="M64 92c4-20 18-32 36-33" stroke="${shade(c, 0.15)}" stroke-width="2" fill="none" opacity=".5"/>`;
+    const c = tr._hijab, d = shade(c, 0.14), l = tint(c, 0.25);
+    return `<path d="M51 122C44 58 74 37 100 37s56 21 49 85c-2 4-7 5-10 2 0-26-7-48-22-58-10-5-24-5-34 0-15 10-22 32-22 58-3 3-8 2-10-2z" fill="${c}"/>
+            <path d="M61 122c0-26 7-46 22-56 10-5 24-5 34 0 15 10 22 30 22 56" stroke="${d}" stroke-width="2" fill="none" opacity=".55"/>
+            <path d="M70 52q30-16 62 2" stroke="${l}" stroke-width="3.5" fill="none" opacity=".45" stroke-linecap="round"/>
+            <path d="M58 92q-2 14 0 26M142 92q2 14 0 26" stroke="${d}" stroke-width="1.6" fill="none" opacity=".4"/>`;
   }
 
   function hat(tr) {
@@ -359,10 +364,11 @@
     s += `<path d="M72 86q9-6 18-1" stroke="${brow}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
           <path d="M110 85q9-5 18 1" stroke="${brow}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
     // gözler
-    s += `<ellipse cx="82" cy="100" rx="5.4" ry="6.8" fill="#2b2420"/><ellipse cx="118" cy="100" rx="5.4" ry="6.8" fill="#2b2420"/>
+    s += `<g class="av-eyes"><ellipse cx="82" cy="100" rx="5.4" ry="6.8" fill="#2b2420"/><ellipse cx="118" cy="100" rx="5.4" ry="6.8" fill="#2b2420"/>
           <circle cx="84" cy="97.5" r="1.9" fill="#fff"/><circle cx="120" cy="97.5" r="1.9" fill="#fff"/>`;
+    if (tr.gender !== 'K') s += `</g>`;
     if (tr.gender === 'K') {
-      s += `<path d="M75.5 96.5l-3-2M124.5 96.5l3-2" stroke="#2b2420" stroke-width="1.6" stroke-linecap="round"/>`;
+      s += `<path d="M75.5 96.5l-3-2M124.5 96.5l3-2" stroke="#2b2420" stroke-width="1.6" stroke-linecap="round"/></g>`;
     }
     // burun
     s += `<path d="M98 105q-4 7 1 9 3 1 5-1" stroke="${shade(tr.skin, 0.25)}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
@@ -386,7 +392,7 @@
     const skin = tr.skin, skinD = shade(skin, 0.1), skinL = tint(skin, 0.12);
     const hijab = tr.extras.tesettur;
 
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-hidden="true" focusable="false" class="avatar-svg">`;
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-hidden="true" focusable="false" class="avatar-svg" style="--d:-${(hashStr(tr.name + '|anim') % 4000) / 1000}s;--bd:-${(hashStr(tr.name + '|blink') % 5000) / 1000}s">`;
     svg += `<defs>
       <clipPath id="c${uid}"><circle cx="100" cy="100" r="100"/></clipPath>
       <clipPath id="h${uid}"><ellipse cx="${HEAD.cx}" cy="${HEAD.cy}" rx="${HEAD.rx}" ry="${HEAD.ry}"/></clipPath>
@@ -396,12 +402,13 @@
     svg += `<g clip-path="url(#c${uid})">`;
     svg += `<rect width="200" height="200" fill="url(#b${uid})"/>`;
 
-    if (!hijab) svg += hairBack(tr);
-    svg += outfit(tr);
+    // Baş grubu (saç arkası + kafa) aynı gecikmeyle hafifçe sallanır
+    svg += `<g class="av-bob av-back">` + (hijab ? hijabBack(tr) : hairBack(tr)) + `</g>`;
+    svg += `<g class="av-body">` + outfit(tr);
     // boyun
     svg += `<path d="M85 126h30v26q-15 10-30 0z" fill="${skinD}"/><path d="M85 130q15 12 30 0v-4H85z" fill="${shade(skin, 0.2)}" opacity=".35"/>`;
-    svg += accessoriesBody(tr);
-    if (hijab) svg += hijabBack(tr);
+    svg += accessoriesBody(tr) + `</g>`;
+    svg += `<g class="av-bob av-head">`;
     // kulaklar
     if (!hijab) {
       svg += `<ellipse cx="56" cy="101" rx="8" ry="10" fill="${skinD}"/><ellipse cx="144" cy="101" rx="8" ry="10" fill="${skinD}"/>
@@ -419,16 +426,17 @@
     svg += glasses(tr);
     if (tr.extras.sapka && !hijab) svg += hat(tr);
     svg += `</g>`;
+    svg += `</g>`;
 
     // rozet
     if (opts.badge !== false) {
       const icon = (tr.category && ICONS[tr.category]) || STAR;
-      svg += `<g class="avatar-badge" transform="translate(150 150)">
+      svg += `<g transform="translate(150 150)"><g class="avatar-badge">
         <circle cx="21" cy="22" r="22" fill="#000" opacity=".12"/>
         <circle cx="21" cy="21" r="22" fill="#ffffff"/>
         <circle cx="21" cy="21" r="22" fill="none" stroke="#cfc9ac" stroke-width="2"/>
         <g transform="translate(6.6 6.6) scale(1.2)">${icon}</g>
-      </g>`;
+      </g></g>`;
     }
     svg += `</svg>`;
     return svg;

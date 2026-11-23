@@ -13,7 +13,8 @@
   const teachers = (window.TEACHERS || [])
     .filter((t) => t && t.name)
     .map((t) => Object.assign({}, t))
-    .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'tr'));
+  function rank(t) { return Number.isFinite(t.order) ? t.order : 100; }
 
   // Mesaj ataması: aynı kategoridekiler hash sırasına göre dizilir,
   // kategoriye özgü bir başlangıç ofsetiyle cümleler sırayla dağıtılır.
@@ -90,6 +91,100 @@
     emptyEl.hidden = visible !== 0;
   });
 
+
+  // ---------- Ses (Web Audio ile üretilir, dosya indirilmez) ----------
+  const soundBtn = document.getElementById('sound-btn');
+  let soundOn = true;
+  try { soundOn = localStorage.getItem('ogretmenler-ses') !== 'kapali'; } catch (e) { /* yok say */ }
+  function renderSoundBtn() {
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.setAttribute('aria-label', soundOn ? 'Sesi kapat' : 'Sesi aç');
+  }
+  renderSoundBtn();
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem('ogretmenler-ses', soundOn ? 'acik' : 'kapali'); } catch (e) { /* yok say */ }
+    renderSoundBtn();
+    if (soundOn) Sound.tick();
+  });
+
+  const Sound = (function () {
+    let ac = null, master = null, noiseBuf = null;
+    function ctx() {
+      if (!soundOn) return null;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!ac) {
+        ac = new AC();
+        master = ac.createGain();
+        master.gain.value = 0.55;
+        master.connect(ac.destination);
+      }
+      if (ac.state === 'suspended') ac.resume();
+      return ac;
+    }
+    function tone(freq, start, dur, type, vol, endFreq) {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, start);
+      if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, start + dur);
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.exponentialRampToValueAtTime(vol, start + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      o.connect(g).connect(master);
+      o.start(start);
+      o.stop(start + dur + 0.05);
+    }
+    function noise() {
+      if (noiseBuf) return noiseBuf;
+      noiseBuf = ac.createBuffer(1, ac.sampleRate * 0.5, ac.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      return noiseBuf;
+    }
+    return {
+      // tıklama: yumuşak bir "pop" ve kısa bir çan arpeji
+      open() {
+        if (!ctx()) return;
+        const t = ac.currentTime;
+        tone(520, t, 0.12, 'sine', 0.35, 180);
+        [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone(f, t + 0.08 + i * 0.075, 0.5, 'triangle', 0.12));
+      },
+      // konfeti: patlayan kâğıt sesi + serpilen pırıltılar
+      confetti() {
+        if (!ctx()) return;
+        const t = ac.currentTime;
+        const src = ac.createBufferSource();
+        src.buffer = noise();
+        const bp = ac.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.setValueAtTime(1800, t);
+        bp.frequency.exponentialRampToValueAtTime(5000, t + 0.25);
+        bp.Q.value = 0.8;
+        const g = ac.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.7, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        src.connect(bp).connect(g).connect(master);
+        src.start(t);
+        src.stop(t + 0.4);
+        tone(140, t, 0.12, 'sine', 0.4, 60);
+        for (let i = 0; i < 9; i++) {
+          tone(1800 + Math.random() * 2600, t + 0.12 + Math.random() * 0.7, 0.18, 'sine', 0.05 + Math.random() * 0.04);
+        }
+      },
+      close() {
+        if (!ctx()) return;
+        const t = ac.currentTime;
+        tone(880, t, 0.14, 'sine', 0.12, 520);
+      },
+      tick() {
+        if (!ctx()) return;
+        tone(1320, ac.currentTime, 0.08, 'triangle', 0.1);
+      }
+    };
+  })();
+
   // ---------- Sahne ----------
   const overlay = document.getElementById('overlay');
   const backdrop = document.getElementById('backdrop');
@@ -117,6 +212,7 @@
     if (busy || current) return;
     busy = true;
     current = t;
+    Sound.open();
 
     const srcAvatar = t._btn.querySelector('.avatar');
     const from = srcAvatar.getBoundingClientRect();
@@ -149,6 +245,8 @@
         busy = false;
         closeBtn.focus({ preventScroll: true });
         typeMessage(t._message);
+        stageAvatar.classList.add('cheer');
+        Sound.confetti();
         burstConfetti(to.left + to.width / 2, to.top + to.height / 2);
       };
       if (reduced() || !stageAvatar.animate) {
@@ -172,6 +270,8 @@
     busy = true;
     const t = current;
     clearTimeout(typingTimer);
+    Sound.close();
+    stageAvatar.classList.remove('cheer');
     overlay.classList.add('closing');
     overlay.classList.remove('open');
 
