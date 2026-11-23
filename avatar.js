@@ -73,6 +73,7 @@
     ['din', 'Din Kültürü'],
     ['beden', 'Beden Eğitimi'], ['basketbol', 'Beden Eğitimi'], ['voleybol', 'Beden Eğitimi'], ['futbol', 'Beden Eğitimi'], ['spor', 'Beden Eğitimi'],
     ['yoga', 'Yoga'],
+    ['astronom', 'Astronomi'], ['uzay', 'Astronomi'],
     ['drama', 'Drama'], ['tiyatro', 'Drama'],
     ['müzik', 'Müzik'],
     ['görsel', 'Görsel Sanatlar'], ['resim', 'Görsel Sanatlar'], ['sanat', 'Görsel Sanatlar'],
@@ -109,6 +110,7 @@
     'Okul Öncesi': `<rect x="3" y="12" width="8" height="8" rx="1" fill="#e4bb4e" stroke="${INK}" stroke-width="1.3"/><rect x="13" y="12" width="8" height="8" rx="1" fill="#4b7dc1" stroke="${INK}" stroke-width="1.3"/><rect x="8" y="4" width="8" height="8" rx="1" fill="#d8453d" stroke="${INK}" stroke-width="1.3"/><path d="M5.5 16h3M17 14.2v3.6M15.2 16h3.6M10.5 10l1.5-3.5 1.5 3.5" stroke="#fff" stroke-width="1.2" fill="none" stroke-linecap="round"/>`,
     'Drama': `<path d="M4 5.5c3 1 7 1 10 0v6c0 3.4-2.2 6-5 6s-5-2.6-5-6z" fill="#f3ecd8" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/><path d="M6.3 9.2l1.4-.4M10.3 8.8l1.4.4M6.8 12.6c1.3 1.3 3.1 1.3 4.4 0" stroke="${INK}" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M15.3 8.4c1.6.3 3.2.2 4.7-.4v5.6c0 3-1.8 5.4-4.4 5.6" fill="#e0586a" stroke="${INK}" stroke-width="1.4" stroke-linejoin="round"/><path d="M16.3 16.3c.9-.8 2-.8 2.8 0" stroke="${INK}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`,
     'Yoga': `<path d="M12 4.5c2 2.2 2.6 5.5 0 9.5-2.6-4-2-7.3 0-9.5z" fill="#e8a5b6" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M12 14c-1.5-3.5-4.5-5-7.5-4.6.2 3.6 3.6 5.8 7.5 4.6zM12 14c1.5-3.5 4.5-5 7.5-4.6-.2 3.6-3.6 5.8-7.5 4.6z" fill="#f1c3cf" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 17.5c4.5 1.6 9.5 1.6 14 0" stroke="#5d8b5b" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+    'Astronomi': `<circle cx="12" cy="12" r="5.6" fill="#e4bb4e" stroke="${INK}" stroke-width="1.4"/><path d="M8.2 10.6q3.8-1.2 7.6 0" stroke="${INK}" stroke-width="1" fill="none" opacity=".45"/><ellipse cx="12" cy="12.6" rx="10" ry="3.2" fill="none" stroke="${INK}" stroke-width="1.5" transform="rotate(-18 12 12.6)"/><path d="M6.8 9.6a5.6 5.6 0 0 1 10.4 0" fill="#e4bb4e"/><path d="M6.8 9.6a5.6 5.6 0 0 1 10.4 0" fill="none" stroke="${INK}" stroke-width="1.4"/><circle cx="4" cy="4.5" r=".9" fill="${INK}"/><circle cx="20" cy="19" r=".8" fill="${INK}"/>`,
     'İdare': null // yıldız
   };
   ICONS['Almanca'] = ICONS['İngilizce'];

@@ -58,6 +58,12 @@ window.MESSAGES = {
     "Dengede durmanın önce içeride başladığını, her denemede biraz daha güçlendiğimizi siz gösterdiniz.",
     "Yoğun günlerin ortasında açtığınız o sakin alan, hepimiz için küçük bir mola, büyük bir iyilik."
   ],
+  "Astronomi": [
+    "Gökyüzüne bakmayı, oradaki her ışığın bir hikâye taşıdığını bize siz öğrettiniz.",
+    "Evrenin büyüklüğü karşısında küçülmek yerine merakla büyümeyi sizden öğrendik.",
+    "Bir teleskobun ucunda başlayan heyecanın, hayatımız boyunca sürecek bir merak olduğunu gösterdiniz.",
+    "Yıldızlara uzanan sorularımızı sabırla dinlediğiniz ve hayallerimize gökyüzü kadar yer açtığınız için teşekkürler."
+  ],
   "Drama": [
     "Sahneye çıkmaktan korkan çocuklara, önce kendileri olmayı öğrettiniz; alkışın en büyüğü sizin.",
     "Bir başkasının yerine geçip bakabilmeyi, empatiyi oyunla öğrettiniz.",
