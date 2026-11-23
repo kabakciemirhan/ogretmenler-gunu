@@ -3,23 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f8f8f8">
-  <title>Öğretmenlerimize Teşekkürler · 24 Kasım</title>
+  <title>Bilişim Öğretmenimizden Küçük Bir Hediye · 24 Kasım</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <button type="button" class="sound-btn" id="sound-btn" aria-pressed="true" aria-label="Sesi kapat">
-    <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+  <div class="bg-fx" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+    <canvas id="sparkles"></canvas>
+  </div>
+
+  <button type="button" class="sound-btn" id="sound-btn" aria-pressed="true" aria-label="Müziği ve sesleri kapat">
+    <span class="eq on" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
     <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
   </button>
+  <div class="music-hint" id="music-hint" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 17V5.5l9-2v11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/><ellipse cx="7.3" cy="17.3" rx="2.6" ry="2" fill="currentColor"/><ellipse cx="16.3" cy="14.8" rx="2.6" ry="2" fill="currentColor"/></svg>
+    Müzik için ekrana dokun
+  </div>
 
   <div class="page" id="page">
     <header class="hero">
-      <p class="eyebrow">Öğretmenlerimize Teşekkürler</p>
-      <h1>24 Kasım Öğretmenler Günü Kutlu Olsun</h1>
+      <div class="doodles" aria-hidden="true">
+        <svg class="dd d1" viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9-4.4-4.1 6-.7z" fill="#e4bb4e"/></svg>
+        <svg class="dd d2" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" fill="#e0586a"/></svg>
+        <svg class="dd d3" viewBox="0 0 24 24"><path d="M12 7.5c-1.8-1.2-6.5-1.2-6.8 4 0 4.2 3 8 5 8 .7 0 1.1-.4 1.8-.4s1.1.4 1.8.4c2 0 5-3.8 5-8-.3-5.2-5-5.2-6.8-4z" fill="#d8453d"/><path d="M13 5.5c1.4-1.6 3.6-1.6 4.4-1-.8 1.4-2.8 2-4.4 1z" fill="#5d8b5b"/></svg>
+        <svg class="dd d4" viewBox="0 0 24 24"><g transform="rotate(45 12 12)"><rect x="3" y="10" width="15" height="4" rx="1" fill="#4b7dc1"/><path d="M18 10l4 2-4 2z" fill="#f3ddb8"/></g></svg>
+        <svg class="dd d5" viewBox="0 0 24 24"><path d="M9.5 17V5.5l9-2v11" stroke="#26281d" stroke-width="1.8" fill="none"/><ellipse cx="7.3" cy="17.3" rx="2.6" ry="2" fill="#26281d"/><ellipse cx="16.3" cy="14.8" rx="2.6" ry="2" fill="#26281d"/></svg>
+        <svg class="dd d6" viewBox="0 0 24 24"><path d="M3 6c3-1.2 6-1.2 9 .6 3-1.8 6-1.8 9-.6v12c-3-1.2-6-1.2-9 .6-3-1.8-6-1.8-9-.6z" fill="#cfc9ac"/><path d="M12 6.6v12" stroke="#26281d" stroke-width="1.2"/></svg>
+      </div>
+      <p class="eyebrow">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="9" width="17" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 9h19v-1a1 1 0 0 0-1-1h-17a1 1 0 0 0-1 1zM12 7v13" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M12 7C9 7 7 6 7 4.6S9 3 12 7c3-4 5-3.8 5-2.4S15 7 12 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Bilişim Öğretmenimizden Küçük Bir Hediye
+      </p>
+      <h1><span class="shine">24 Kasım Öğretmenler Günü</span> <span class="shine">Kutlu Olsun</span></h1>
       <p class="sub">Uğur Okulları Tire Kampüsü</p>
+      <div class="chips" aria-hidden="true">
+        <span class="chip"><b id="count">37</b> öğretmen</span>
+        <span class="chip">1 teşekkür</span>
+        <span class="chip">sonsuz emek</span>
+      </div>
     </header>
 
     <main>
@@ -57,6 +84,7 @@
   <script src="data/teachers.js"></script>
   <script src="data/messages.js"></script>
   <script src="avatar.js"></script>
+  <script src="music.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

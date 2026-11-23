@@ -327,7 +327,7 @@
       s += `<path d="M100 158l-13-7v14zM100 158l13-7v14z" fill="#b8323f"/><rect x="96" y="154.5" width="8" height="7" rx="2" fill="#93222f"/>`;
     }
     if (e.atki) {
-      const sc = tr.outfit && luminance(tr.outfit) < 0.4 ? '#cfc9ac' : '#b8323f';
+      const sc = tr.outfit && luminance(tr.outfit) < 0.4 ? '#5e6240' : '#b8323f';
       s += `<path d="M70 146q30 18 60 0l4 12q-34 20-68 0z" fill="${sc}"/><path d="M110 156l6 34 12-2-6-36z" fill="${shade(sc, 0.12)}"/>`;
     }
     return s;
@@ -351,9 +351,11 @@
   }
 
   function hat(tr) {
-    const c = '#6b4f3a';
-    return `<path d="M52 76C52 34 148 34 148 76z" fill="${c}"/><path d="M42 78q58-12 116 0l-2 8q-56-10-112 0z" fill="${shade(c, 0.2)}"/>
-            <path d="M54 70q46-8 92 0" stroke="#cfc9ac" stroke-width="5" fill="none"/>`;
+    // yumuşak kasket
+    const c = '#2e2e30', l = tint(c, 0.12);
+    return `<path d="M50 74C48 36 74 28 100 28s54 8 50 46q-50-10-100 0z" fill="${c}"/>
+            <path d="M47 75q53-12 106 0q-2 6-6 7-47-9-94 0-4-1-6-7z" fill="${shade(c, 0.3)}"/>
+            <path d="M68 40q30-12 60 0" stroke="${l}" stroke-width="3" fill="none" opacity=".6" stroke-linecap="round"/>`;
   }
 
   function face(tr) {

@@ -35,6 +35,10 @@
         .sort((a, b) => hashStr(a.name) - hashStr(b.name) || a.name.localeCompare(b.name, 'tr'))
         .forEach((t, i) => { t._message = pool[(offset + i) % pool.length]; });
     });
+    // Kişisel yazısı olan öğretmende o yazı kullanılır
+    teachers.forEach((t) => {
+      if (t.message && String(t.message).trim()) t._message = String(t.message).trim();
+    });
   })();
 
   // ---------- Izgara ----------
@@ -92,37 +96,107 @@
   });
 
 
-  // ---------- Ses (Web Audio ile üretilir, dosya indirilmez) ----------
+  // ---------- Ses ve müzik (Web Audio ile üretilir, dosya indirilmez) ----------
   const soundBtn = document.getElementById('sound-btn');
+  const musicHint = document.getElementById('music-hint');
   let soundOn = true;
   try { soundOn = localStorage.getItem('ogretmenler-ses') !== 'kapali'; } catch (e) { /* yok say */ }
-  function renderSoundBtn() {
-    soundBtn.setAttribute('aria-pressed', String(soundOn));
-    soundBtn.setAttribute('aria-label', soundOn ? 'Sesi kapat' : 'Sesi aç');
+
+  let ac = null, master = null, sfxBus = null, music = null, noiseBuf = null, unlocked = false;
+
+  function ensureAudio() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!ac) {
+      ac = new AC();
+      master = ac.createGain();
+      master.gain.value = 0.9;
+      master.connect(ac.destination);
+      sfxBus = ac.createGain();
+      sfxBus.gain.value = 0.55;
+      sfxBus.connect(master);
+      const musicOut = ac.createGain();
+      musicOut.gain.value = 0.32;
+      musicOut.connect(master);
+      if (window.createMusic) music = window.createMusic(ac, musicOut);
+    }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
   }
+
+  // iPhone'da sessiz moddayken de Web Audio duyulsun diye
+  function iosUnlock() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* yok say */ }
+    try {
+      const sr = 8000, n = sr / 2, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+      const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+      w(36, 'data'); v.setUint32(40, n * 2, true);
+      const el = new Audio(URL.createObjectURL(new Blob([buf], { type: 'audio/wav' })));
+      el.loop = true;
+      el.setAttribute('playsinline', '');
+      const p = el.play();
+      if (p && p.catch) p.catch(() => {});
+    } catch (e) { /* yok say */ }
+  }
+
+  function renderSoundBtn() {
+    const playing = soundOn && music && music.playing;
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.setAttribute('aria-label', soundOn ? 'Müziği ve sesleri kapat' : 'Müziği ve sesleri aç');
+    soundBtn.classList.toggle('playing', !!playing);
+  }
+
+  function startMusic() {
+    if (!soundOn) return;
+    if (!ensureAudio() || !music) return;
+    music.start();
+    if (current) music.duck(true);
+    renderSoundBtn();
+  }
+
+  // Tarayıcılar sesi ancak ilk dokunuştan sonra açtırır
+  function firstGesture() {
+    if (unlocked) return;
+    unlocked = true;
+    musicHint.classList.add('hide');
+    setTimeout(() => { musicHint.hidden = true; }, 500);
+    if (soundOn) { iosUnlock(); startMusic(); }
+    ['pointerdown', 'keydown', 'touchend'].forEach((ev) => window.removeEventListener(ev, firstGesture, true));
+  }
+  ['pointerdown', 'keydown', 'touchend'].forEach((ev) => window.addEventListener(ev, firstGesture, true));
+  if (soundOn) {
+    musicHint.hidden = false;
+    setTimeout(() => musicHint.classList.add('show'), 900);
+  }
+
   renderSoundBtn();
   soundBtn.addEventListener('click', () => {
     soundOn = !soundOn;
     try { localStorage.setItem('ogretmenler-ses', soundOn ? 'acik' : 'kapali'); } catch (e) { /* yok say */ }
+    if (soundOn) {
+      if (!unlocked) firstGesture();
+      iosUnlock();
+      startMusic();
+      Sound.tick();
+    } else if (music) {
+      music.stop();
+    }
     renderSoundBtn();
-    if (soundOn) Sound.tick();
+  });
+
+  // Sekme arka plana geçince müziği durdur, dönünce devam et
+  document.addEventListener('visibilitychange', () => {
+    if (!music || !soundOn || !unlocked) return;
+    if (document.hidden) music.stop();
+    else startMusic();
+    renderSoundBtn();
   });
 
   const Sound = (function () {
-    let ac = null, master = null, noiseBuf = null;
-    function ctx() {
-      if (!soundOn) return null;
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return null;
-      if (!ac) {
-        ac = new AC();
-        master = ac.createGain();
-        master.gain.value = 0.55;
-        master.connect(ac.destination);
-      }
-      if (ac.state === 'suspended') ac.resume();
-      return ac;
-    }
+    function ready() { return soundOn && ensureAudio(); }
     function tone(freq, start, dur, type, vol, endFreq) {
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = type || 'sine';
@@ -131,7 +205,7 @@
       g.gain.setValueAtTime(0.0001, start);
       g.gain.exponentialRampToValueAtTime(vol, start + 0.012);
       g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-      o.connect(g).connect(master);
+      o.connect(g).connect(sfxBus);
       o.start(start);
       o.stop(start + dur + 0.05);
     }
@@ -143,16 +217,16 @@
       return noiseBuf;
     }
     return {
-      // tıklama: yumuşak bir "pop" ve kısa bir çan arpeji
+      // tıklama: yumuşak bir "pop" ve kısa bir çan arpeji (müzikle aynı tonda)
       open() {
-        if (!ctx()) return;
+        if (!ready()) return;
         const t = ac.currentTime;
         tone(520, t, 0.12, 'sine', 0.35, 180);
         [1046.5, 1318.5, 1568, 2093].forEach((f, i) => tone(f, t + 0.08 + i * 0.075, 0.5, 'triangle', 0.12));
       },
       // konfeti: patlayan kâğıt sesi + serpilen pırıltılar
       confetti() {
-        if (!ctx()) return;
+        if (!ready()) return;
         const t = ac.currentTime;
         const src = ac.createBufferSource();
         src.buffer = noise();
@@ -165,7 +239,7 @@
         g.gain.setValueAtTime(0.0001, t);
         g.gain.exponentialRampToValueAtTime(0.7, t + 0.008);
         g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-        src.connect(bp).connect(g).connect(master);
+        src.connect(bp).connect(g).connect(sfxBus);
         src.start(t);
         src.stop(t + 0.4);
         tone(140, t, 0.12, 'sine', 0.4, 60);
@@ -174,12 +248,11 @@
         }
       },
       close() {
-        if (!ctx()) return;
-        const t = ac.currentTime;
-        tone(880, t, 0.14, 'sine', 0.12, 520);
+        if (!ready()) return;
+        tone(880, ac.currentTime, 0.14, 'sine', 0.12, 520);
       },
       tick() {
-        if (!ctx()) return;
+        if (!ready()) return;
         tone(1320, ac.currentTime, 0.08, 'triangle', 0.1);
       }
     };
@@ -213,6 +286,7 @@
     busy = true;
     current = t;
     Sound.open();
+    if (music) music.duck(true);
 
     const srcAvatar = t._btn.querySelector('.avatar');
     const from = srcAvatar.getBoundingClientRect();
@@ -271,6 +345,7 @@
     const t = current;
     clearTimeout(typingTimer);
     Sound.close();
+    if (music) music.duck(false);
     stageAvatar.classList.remove('cheer');
     overlay.classList.add('closing');
     overlay.classList.remove('open');
@@ -301,9 +376,11 @@
   }
 
   // ---------- Daktilo ----------
+  let finishTyping = null;
   function typeMessage(text) {
     clearTimeout(typingTimer);
     msgEl.textContent = '';
+    finishTyping = null;
     if (reduced()) {
       msgEl.textContent = text;
       return;
@@ -314,20 +391,34 @@
     caret.setAttribute('aria-hidden', 'true');
     msgEl.append(textNode, caret);
     const chars = Array.from(text);
+    const fast = chars.length > 160;
     let i = 0;
+    const end = () => {
+      clearTimeout(typingTimer);
+      textNode.data = text;
+      finishTyping = null;
+      typingTimer = setTimeout(() => caret.remove(), 1400);
+    };
+    finishTyping = end;
     const step = () => {
       if (!current) return;
       textNode.data += chars[i++];
       if (i < chars.length) {
         const ch = chars[i - 1];
-        const delay = /[.,;:!?…]/.test(ch) ? 180 : 26 + Math.random() * 22;
+        let delay = fast ? 17 + Math.random() * 14 : 26 + Math.random() * 22;
+        if (/[.!?…]/.test(ch)) delay = fast ? 260 : 320;
+        else if (/[,;:]/.test(ch)) delay = fast ? 110 : 160;
         typingTimer = setTimeout(step, delay);
       } else {
-        typingTimer = setTimeout(() => caret.remove(), 1400);
+        end();
       }
     };
     typingTimer = setTimeout(step, 120);
   }
+  // Karta dokununca yazı hemen tamamlanır
+  document.getElementById('stage-card').addEventListener('click', (e) => {
+    if (finishTyping && !e.target.closest('button')) finishTyping();
+  });
 
   // ---------- Etkileşimler ----------
   grid.addEventListener('click', (e) => {
@@ -430,4 +521,70 @@
     }
   }
   window.addEventListener('resize', () => { if (rafId) resizeCanvas(); });
+
+  // ---------- Anasayfa efektleri ----------
+  const countEl = document.getElementById('count');
+  if (countEl) countEl.textContent = String(teachers.length);
+
+  // Kartlar ekrana girdikçe sırayla belirsin
+  const items = teachers.map((t) => t._li);
+  if (reduced() || !('IntersectionObserver' in window)) {
+    items.forEach((li) => li.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      let k = 0;
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        en.target.style.setProperty('--stagger', (k++ * 55) + 'ms');
+        en.target.classList.add('in');
+        io.unobserve(en.target);
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.12 });
+    items.forEach((li) => { li.classList.add('reveal'); io.observe(li); });
+  }
+
+  // Arka planda yavaşça süzülen ışık zerreleri
+  (function sparkles() {
+    const cv = document.getElementById('sparkles');
+    if (!cv || reduced()) return;
+    const c2 = cv.getContext('2d');
+    let w = 0, h = 0, dots = [], raf = null;
+    const cols = ['207,201,172', '228,187,78', '255,255,255', '232,165,182'];
+    function size() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth; h = window.innerHeight;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      c2.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.round(Math.min(46, (w * h) / 22000));
+      dots = Array.from({ length: n }, () => ({
+        x: Math.random() * w, y: Math.random() * h,
+        r: 0.8 + Math.random() * 2.2,
+        vy: -(0.08 + Math.random() * 0.25), vx: (Math.random() - 0.5) * 0.12,
+        p: Math.random() * Math.PI * 2, c: cols[(Math.random() * cols.length) | 0]
+      }));
+    }
+    function frame() {
+      c2.clearRect(0, 0, w, h);
+      for (const d of dots) {
+        d.x += d.vx; d.y += d.vy; d.p += 0.02;
+        if (d.y < -10) { d.y = h + 10; d.x = Math.random() * w; }
+        const a = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(d.p));
+        c2.beginPath();
+        c2.fillStyle = `rgba(${d.c},${a})`;
+        c2.shadowColor = `rgba(${d.c},.8)`;
+        c2.shadowBlur = 6;
+        c2.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        c2.fill();
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    size();
+    frame();
+    window.addEventListener('resize', size);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { cancelAnimationFrame(raf); raf = null; }
+      else if (!raf) frame();
+    });
+  })();
+
 })();
