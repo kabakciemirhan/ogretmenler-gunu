@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f8f8f8">
+  <title>Öğretmenlerimize Teşekkürler · 24 Kasım</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page" id="page">
+    <header class="hero">
+      <p class="eyebrow">Öğretmenlerimize Teşekkürler</p>
+      <h1>24 Kasım Öğretmenler Günü Kutlu Olsun</h1>
+      <p class="sub">Uğur Okulları Tire Kampüsü</p>
+    </header>
+
+    <main>
+      <div class="search-wrap">
+        <label for="search" class="visually-hidden">Adını ara</label>
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="search" type="search" placeholder="Adını ara…" autocomplete="off" spellcheck="false">
+      </div>
+      <p class="hint">Avatarına dokun, sana bir sürprizimiz var.</p>
+
+      <ul class="grid" id="grid" aria-label="Öğretmenler"></ul>
+      <p class="empty" id="empty" hidden>Bu isimde bir öğretmen bulamadık.</p>
+    </main>
+
+    <footer class="footer">Emirhan Kabakcı tarafından sevgiyle hazırlandı ❤️</footer>
+  </div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="backdrop" id="backdrop"></div>
+    <div class="stage" id="stage" role="dialog" aria-modal="true" aria-labelledby="stage-name">
+      <div class="stage-avatar" id="stage-avatar"></div>
+      <div class="stage-card" id="stage-card">
+        <h2 id="stage-name"></h2>
+        <p class="stage-branch" id="stage-branch"></p>
+        <p class="stage-message" id="stage-message" aria-hidden="true"></p>
+        <p class="visually-hidden" id="stage-message-sr"></p>
+        <p class="stage-note" id="stage-note" hidden></p>
+        <button type="button" class="close-btn" id="close-btn">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script src="data/teachers.js"></script>
+  <script src="data/messages.js"></script>
+  <script src="avatar.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
